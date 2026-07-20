@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Library Management System</title>
+
+<style>
+body{
+    font-family:Arial;
+    margin:20px;
+    background:#f4f4f4;
+}
+
+h1{
+    text-align:center;
+}
+
+section{
+    background:white;
+    padding:15px;
+    margin:20px auto;
+    width:80%;
+    border-radius:10px;
+    box-shadow:0 0 5px gray;
+}
+
+input,select,button{
+    padding:8px;
+    margin:5px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+
+table,th,td{
+    border:1px solid black;
+}
+
+th,td{
+    padding:8px;
+    text-align:center;
+}
+
+button{
+    cursor:pointer;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>Library Management System</h1>
+
+<!-- LOGIN -->
+
+<section>
+
+<h2>Login</h2>
+
+<select>
+<option>Student</option>
+<option>Admin</option>
+</select>
+
+<input type="text" placeholder="Username">
+
+<input type="password" placeholder="Password">
+
+<button onclick="alert('Login Successful')">Login</button>
+
+</section>
+
+<!-- REGISTER -->
+
+<section>
+
+<h2>Student Registration</h2>
+
+<input id="name" placeholder="Name">
+
+<input placeholder="Email">
+
+<input placeholder="Password">
+
+<button onclick="register()">Register</button>
+
+</section>
+
+<!-- SEARCH BOOK -->
+
+<section>
+
+<h2>Search Book</h2>
+
+<input id="search" placeholder="Enter Book Name">
+
+<button onclick="searchBook()">Search</button>
+
+<p id="result"></p>
+
+</section>
+
+<!-- BOOK LIST -->
+
+<section>
+
+<h2>Books Available</h2>
+
+<table id="bookTable">
+
+<tr>
+
+<th>ID</th>
+<th>Book</th>
+<th>Author</th>
+<th>Status</th>
+
+</tr>
+
+</table>
+
+</section>
+
+<!-- ADMIN -->
+
+<section>
+
+<h2>Admin Panel</h2>
+
+<input id="bookName" placeholder="Book Name">
+
+<input id="author" placeholder="Author">
+
+<button onclick="addBook()">Add Book</button>
+
+</section>
+
+<!-- ISSUE BOOK -->
+
+<section>
+
+<h2>Issue Book</h2>
+
+<input placeholder="Student Name">
+
+<input placeholder="Book Name">
+
+<button onclick="alert('Book Issued')">Issue</button>
+
+</section>
+
+<!-- RETURN BOOK -->
+
+<section>
+
+<h2>Return Book</h2>
+
+<input placeholder="Book Name">
+
+<button onclick="alert('Book Returned')">Return</button>
+
+</section>
+
+<!-- FINE -->
+
+<section>
+
+<h2>Fine</h2>
+
+<input placeholder="Days Late">
+
+<button onclick="fine()">Calculate Fine</button>
+
+<p id="fine"></p>
+
+</section>
+
+<!-- MATERIAL -->
+
+<section>
+
+<h2>Study Material</h2>
+
+<select>
+
+<option>Year 1</option>
+<option>Year 2</option>
+<option>Year 3</option>
+<option>Year 4</option>
+
+</select>
+
+<select>
+
+<option>Semester 1</option>
+<option>Semester 2</option>
+<option>Semester 3</option>
+<option>Semester 4</option>
+<option>Semester 5</option>
+<option>Semester 6</option>
+<option>Semester 7</option>
+<option>Semester 8</option>
+
+</select>
+
+<button onclick="alert('Material Downloaded')">Download</button>
+
+</section>
+
+<!-- BORROW HISTORY -->
+
+<section>
+
+<h2>My Borrow History</h2>
+
+<table>
+
+<tr>
+
+<th>Book</th>
+<th>Issue Date</th>
+<th>Expiry Date</th>
+
+</tr>
+
+<tr>
+
+<td>Java</td>
+<td>10/07/2026</td>
+<td>20/07/2026</td>
+
+</tr>
+
+</table>
+
+</section>
+
+<!-- PROFILE -->
+
+<section>
+
+<h2>My Profile</h2>
+
+<p>Name : Student</p>
+
+<p>Department : CSE</p>
+
+<p>Fine : ₹0</p>
+
+</section>
+
+<!-- CONTACT -->
+
+<section>
+
+<h2>Contact Library</h2>
+
+<input placeholder="Your Name">
+
+<input placeholder="Email">
+
+<br>
+
+<textarea rows="5" cols="40"></textarea>
+
+<br>
+
+<button onclick="alert('Message Sent')">Send</button>
+
+</section>
+
+<script>
+
+let books=[
+{id:1,name:"Java",author:"James Gosling",status:"Available"},
+{id:2,name:"Python",author:"Guido",status:"Available"},
+{id:3,name:"C Programming",author:"Dennis",status:"Issued"}
+];
+
+function displayBooks(){
+
+let table=document.getElementById("bookTable");
+
+table.innerHTML="<tr><th>ID</th><th>Book</th><th>Author</th><th>Status</th></tr>";
+
+books.forEach(function(book){
+
+table.innerHTML+=`
+<tr>
+<td>${book.id}</td>
+<td>${book.name}</td>
+<td>${book.author}</td>
+<td>${book.status}</td>
+</tr>
+`;
+
+});
+
+}
+
+displayBooks();
+
+function addBook(){
+
+let name=document.getElementById("bookName").value;
+
+let author=document.getElementById("author").value;
+
+books.push({
+
+id:books.length+1,
+name:name,
+author:author,
+status:"Available"
+
+});
+
+displayBooks();
+
+alert("Book Added");
+
+}
+
+function searchBook(){
+
+let text=document.getElementById("search").value.toLowerCase();
+
+let found=books.find(b=>b.name.toLowerCase().includes(text));
+
+if(found)
+
+document.getElementById("result").innerHTML=
+found.name+" by "+found.author+" ("+found.status+")";
+
+else
+
+document.getElementById("result").innerHTML="Book Not Found";
+
+}
+
+function fine(){
+
+let days=document.querySelectorAll("input")[10].value;
+
+let amount=days*5;
+
+document.getElementById("fine").innerHTML="Fine : ₹"+amount;
+
+}
+
+function register(){
+
+alert("Registration Successful");
+
+}
+
+</script>
+
+</body>
+</html>
