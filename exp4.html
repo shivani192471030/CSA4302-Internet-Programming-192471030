@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simple Railway Reservation System</title>
+<style>
+body{font-family:Arial;margin:0;background:#eef3f8}
+header{background:#0b5ed7;color:#fff;padding:15px;text-align:center}
+section{background:#fff;margin:15px;padding:15px;border-radius:8px}
+input,select,button,textarea{padding:8px;margin:5px}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #999;padding:8px;text-align:center}
+</style>
+</head>
+<body>
+<header><h1>Railway Reservation System</h1></header>
+
+<section>
+<h2>Login</h2>
+<input id="loginUser" placeholder="Username">
+<input id="loginPass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p><b>Admin:</b> admin / admin123</p>
+</section>
+
+<section>
+<h2>Register</h2>
+<input id="name" placeholder="Name">
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="register()">Register</button>
+</section>
+
+<section>
+<h2>Search Train</h2>
+<input id="origin" placeholder="Origin">
+<input id="destination" placeholder="Destination">
+<input id="journeyDate" type="date">
+<select id="trainClass">
+<option>Sleeper</option>
+<option>3A</option>
+<option>2A</option>
+<option>1A</option>
+</select>
+<button onclick="searchTrain()">Search</button>
+<p id="searchResult"></p>
+</section>
+
+<section>
+<h2>Book Ticket</h2>
+<select id="trainSelect">
+<option>Express 101</option>
+<option>Superfast 202</option>
+<option>Intercity 303</option>
+</select>
+<input id="passenger" placeholder="Passenger Name">
+<button onclick="bookTicket()">Book Ticket</button>
+<button onclick="payment()">Pay</button>
+</section>
+
+<section>
+<h2>Booking History</h2>
+<button onclick="showBookings()">Refresh</button>
+<table id="bookingTable">
+<tr><th>PNR</th><th>Train</th><th>Passenger</th><th>Date</th><th>Status</th></tr>
+</table>
+</section>
+
+<section>
+<h2>PNR Status</h2>
+<input id="pnrInput" placeholder="Enter PNR">
+<button onclick="checkPNR()">Check</button>
+<p id="pnrStatus"></p>
+</section>
+
+<section>
+<h2>Cancel Ticket</h2>
+<input id="cancelPNR" placeholder="PNR">
+<button onclick="cancelTicket()">Cancel Ticket</button>
+<p id="refund"></p>
+</section>
+
+<section>
+<h2>Admin Panel</h2>
+<h3>Update Train</h3>
+<select id="adminTrain">
+<option>Express 101</option>
+<option>Superfast 202</option>
+<option>Intercity 303</option>
+</select>
+<input id="fare" placeholder="Fare">
+<input id="seats" placeholder="Available Seats">
+<button onclick="updateTrain()">Update</button>
+
+<h3>Reports</h3>
+<button onclick="report()">Generate Report</button>
+<p id="reportData"></p>
+</section>
+
+<script>
+let currentUser=null;
+let users=[];
+let trains=[
+{name:"Express 101",fare:450,seats:50},
+{name:"Superfast 202",fare:700,seats:40},
+{name:"Intercity 303",fare:350,seats:60}
+];
+let bookings=[];
+
+function register(){
+ users.push({name:name.value,username:user.value,password:pass.value});
+ alert("Registered Successfully");
+}
+
+function login(){
+ if(loginUser.value==="admin"&&loginPass.value==="admin123"){
+   currentUser="Admin";
+   alert("Admin Login Successful");
+   return;
+ }
+ let u=users.find(x=>x.username===loginUser.value&&x.password===loginPass.value);
+ if(u){currentUser=u.username;alert("Welcome "+u.name);}
+ else alert("Invalid Login");
+}
+
+function searchTrain(){
+ let t=trains.find(x=>x.name===trainSelect.value);
+ searchResult.innerHTML=
+ "Train: "+t.name+
+ "<br>Fare: ₹"+t.fare+
+ "<br>Available Seats: "+t.seats+
+ "<br>Class: "+trainClass.value;
+}
+
+function payment(){
+ alert("Payment Successful (Demo)");
+}
+
+function bookTicket(){
+ if(!currentUser||currentUser==="Admin"){alert("Login as User");return;}
+ let t=trains.find(x=>x.name===trainSelect.value);
+ if(t.seats<=0){alert("No Seats Available");return;}
+ t.seats--;
+ let pnr="PNR"+Math.floor(Math.random()*900000+100000);
+ bookings.push({
+   pnr:pnr,
+   user:currentUser,
+   train:t.name,
+   passenger:passenger.value,
+   date:journeyDate.value,
+   status:"Confirmed"
+ });
+ alert("Ticket Booked\nPNR: "+pnr);
+}
+
+function showBookings(){
+ bookingTable.innerHTML="<tr><th>PNR</th><th>Train</th><th>Passenger</th><th>Date</th><th>Status</th></tr>";
+ bookings.forEach(b=>{
+   if(currentUser==="Admin"||b.user===currentUser){
+      bookingTable.innerHTML+=`<tr><td>${b.pnr}</td><td>${b.train}</td><td>${b.passenger}</td><td>${b.date}</td><td>${b.status}</td></tr>`;
+   }
+ });
+}
+
+function checkPNR(){
+ let b=bookings.find(x=>x.pnr===pnrInput.value);
+ pnrStatus.innerHTML=b?"Status: "+b.status:"PNR Not Found";
+}
+
+function cancelTicket(){
+ let i=bookings.findIndex(x=>x.pnr===cancelPNR.value);
+ if(i!=-1){
+   let fare=trains.find(x=>x.name===bookings[i].train).fare;
+   let refundAmt=fare*0.8;
+   refund.innerHTML="Refund Amount: ₹"+refundAmt;
+   bookings.splice(i,1);
+   alert("Ticket Cancelled");
+   showBookings();
+ }else alert("PNR Not Found");
+}
+
+function updateTrain(){
+ let t=trains.find(x=>x.name===adminTrain.value);
+ t.fare=parseInt(fare.value)||t.fare;
+ t.seats=parseInt(seats.value)||t.seats;
+ alert("Train Updated");
+}
+
+function report(){
+ reportData.innerHTML=
+ "Registered Users: "+users.length+
+ "<br>Total Bookings: "+bookings.length+
+ "<br>Total Trains: "+trains.length;
+}
+</script>
+</body>
+</html>
