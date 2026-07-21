@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cake Ordering System</title>
+<style>
+body{font-family:Arial;margin:0;background:#f8f3f6}
+header{background:#c2185b;color:#fff;padding:15px;text-align:center}
+section{background:#fff;margin:15px;padding:15px;border-radius:8px}
+input,select,button,textarea{padding:8px;margin:5px}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #999;padding:8px;text-align:center}
+</style>
+</head>
+<body>
+<header><h1>Online Cake Ordering System</h1></header>
+
+<section>
+<h2>Login</h2>
+<input id="loginUser" placeholder="Username">
+<input id="loginPass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p><b>Admin:</b> admin / admin123</p>
+</section>
+
+<section>
+<h2>Register</h2>
+<input id="name" placeholder="Name">
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="register()">Register</button>
+</section>
+
+<section>
+<h2>Search & Filter Cakes</h2>
+<input id="search" placeholder="Search Cake">
+<select id="category">
+<option>Birthday</option><option>Wedding</option><option>Anniversary</option><option>Custom</option>
+</select>
+<select id="priceFilter">
+<option>All</option><option>0-500</option><option>500-1000</option><option>1000+</option>
+</select>
+<button onclick="searchCake()">Search</button>
+<p id="result"></p>
+</section>
+
+<section>
+<h2>Cake Description</h2>
+<select id="cakeSelect">
+<option>Chocolate Cake</option>
+<option>Vanilla Cake</option>
+<option>Red Velvet</option>
+<option>Black Forest</option>
+</select>
+<select id="size">
+<option>0.5 Kg</option><option>1 Kg</option><option>2 Kg</option>
+</select>
+<input id="message" placeholder="Cake Message">
+<button onclick="viewCake()">View Description</button>
+<p id="description"></p>
+<button onclick="addCart()">Add to Cart</button>
+</section>
+
+<section>
+<h2>Shipping Address</h2>
+<textarea id="address" placeholder="Enter Shipping Address"></textarea><br>
+<button onclick="saveAddress()">Save / Update Address</button>
+</section>
+
+<section>
+<h2>Place Order</h2>
+<button onclick="payment()">Pay</button>
+<button onclick="placeOrder()">Place Order</button>
+</section>
+
+<section>
+<h2>My Orders</h2>
+<button onclick="showOrders()">Refresh</button>
+<table id="orders">
+<tr><th>ID</th><th>Cake</th><th>Size</th><th>Status</th></tr>
+</table>
+</section>
+
+<section>
+<h2>Shipping Status</h2>
+<input id="track" placeholder="Order ID">
+<button onclick="trackOrder()">Track</button>
+<p id="trackResult"></p>
+</section>
+
+<section>
+<h2>Admin Panel</h2>
+<input id="newCake" placeholder="Cake Name">
+<input id="newPrice" placeholder="Price">
+<input id="image" placeholder="Image File Name">
+<textarea id="desc" placeholder="Description"></textarea><br>
+<button onclick="addProduct()">Post Cake</button>
+<br><br>
+<input id="orderId" placeholder="Order ID">
+<select id="status">
+<option>Preparing</option>
+<option>Shipped</option>
+<option>Delivered</option>
+</select>
+<button onclick="updateStatus()">Update Order Status</button>
+</section>
+
+<script>
+let currentUser=null;
+let users=[];
+let cart=[];
+let cakes=[
+{name:"Chocolate Cake",price:600,desc:"Rich chocolate cake."},
+{name:"Vanilla Cake",price:500,desc:"Classic vanilla cake."},
+{name:"Red Velvet",price:900,desc:"Cream cheese frosting."},
+{name:"Black Forest",price:800,desc:"Chocolate & cherries."}
+];
+let orders=[];
+let shippingAddress="";
+
+function register(){users.push({name:name.value,username:user.value,password:pass.value});alert("Registered");}
+function login(){
+ if(loginUser.value==="admin"&&loginPass.value==="admin123"){currentUser="Admin";alert("Admin Login");return;}
+ let u=users.find(x=>x.username===loginUser.value&&x.password===loginPass.value);
+ if(u){currentUser=u.username;alert("Welcome "+u.name);} else alert("Invalid Login");
+}
+function searchCake(){
+ let c=cakes.find(x=>x.name.toLowerCase().includes(search.value.toLowerCase()))||cakes[0];
+ result.innerHTML="Found: "+c.name+" | ₹"+c.price+" | Category: "+category.value;
+}
+function viewCake(){
+ let c=cakes.find(x=>x.name===cakeSelect.value);
+ description.innerHTML="<b>"+c.name+"</b><br>"+c.desc+"<br>₹"+c.price;
+}
+function addCart(){cart.push({cake:cakeSelect.value,size:size.value});alert("Added to Cart");}
+function saveAddress(){shippingAddress=address.value;alert("Address Saved");}
+function payment(){alert("Payment Successful (Demo)");}
+function placeOrder(){
+ if(!currentUser||currentUser==="Admin"){alert("Login as User");return;}
+ if(cart.length==0){alert("Cart Empty");return;}
+ let item=cart.pop();
+ let id="ORD"+(orders.length+1);
+ orders.push({id:id,user:currentUser,cake:item.cake,size:item.size,status:"Preparing"});
+ alert("Order Placed. ID: "+id);
+}
+function showOrders(){
+ orders.innerHTML="<tr><th>ID</th><th>Cake</th><th>Size</th><th>Status</th></tr>";
+ let tbl=document.getElementById("orders");
+ tbl.innerHTML="<tr><th>ID</th><th>Cake</th><th>Size</th><th>Status</th></tr>";
+ ordersData=orders;
+ ordersData.forEach(o=>{
+  if(currentUser==="Admin"||o.user===currentUser){
+   tbl.innerHTML+=`<tr><td>${o.id}</td><td>${o.cake}</td><td>${o.size}</td><td>${o.status}</td></tr>`;
+  }
+ });
+}
+function trackOrder(){
+ let o=orders.find(x=>x.id===track.value);
+ trackResult.innerHTML=o?"Status: "+o.status:"Order Not Found";
+}
+function addProduct(){
+ cakes.push({name:newCake.value,price:newPrice.value,desc:desc.value,image:image.value});
+ alert("Cake Added");
+}
+function updateStatus(){
+ let o=orders.find(x=>x.id===orderId.value);
+ if(o){o.status=status.value;alert("Status Updated");showOrders();} else alert("Order Not Found");
+}
+</script>
+</body>
+</html>
