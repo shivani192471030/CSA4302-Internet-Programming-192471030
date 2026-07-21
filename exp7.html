@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Beauty Parlour Appointment System</title>
+<style>
+body{font-family:Arial;margin:0;background:#fdf2f8}
+header{background:#ad1457;color:white;padding:15px;text-align:center}
+section{background:white;margin:15px;padding:15px;border-radius:8px}
+input,select,button,textarea{padding:8px;margin:5px}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #999;padding:8px;text-align:center}
+</style>
+</head>
+<body>
+
+<header><h1>Beauty Parlour Appointment Booking</h1></header>
+
+<section>
+<h2>Login</h2>
+<input id="loginUser" placeholder="Username">
+<input id="loginPass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p><b>Admin:</b> admin / admin123</p>
+</section>
+
+<section>
+<h2>Register</h2>
+<input id="name" placeholder="Name">
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="register()">Register</button>
+</section>
+
+<section>
+<h2>Book Appointment</h2>
+<select id="service">
+<option>Hair Cut</option>
+<option>Hair Spa</option>
+<option>Facial</option>
+<option>Bridal Makeup</option>
+<option>Manicure</option>
+</select>
+<select id="stylist">
+<option>Emma</option>
+<option>Sophia</option>
+<option>Olivia</option>
+</select>
+<input id="date" type="date">
+<input id="time" type="time">
+<button onclick="checkAvailability()">Check Slot</button>
+<button onclick="payment()">Pay</button>
+<button onclick="book()">Book Appointment</button>
+<p id="slot"></p>
+</section>
+
+<section>
+<h2>Reservations Calendar</h2>
+<p>Unavailable Hours: 1:00 PM - 2:00 PM</p>
+</section>
+
+<section>
+<h2>My Account</h2>
+<button onclick="showAppointments()">Refresh</button>
+<table id="apptTable">
+<tr><th>ID</th><th>Service</th><th>Stylist</th><th>Date</th><th>Time</th><th>Status</th></tr>
+</table>
+</section>
+
+<section>
+<h2>Edit / Cancel Reservation</h2>
+<input id="editId" placeholder="Appointment ID">
+<input id="newDate" type="date">
+<input id="newTime" type="time">
+<button onclick="editAppointment()">Edit</button>
+<button onclick="cancelAppointment()">Cancel</button>
+</section>
+
+<section>
+<h2>Personal Information</h2>
+<textarea id="address" placeholder="Address / Contact Details"></textarea>
+<button onclick="alert('Profile Updated')">Save</button>
+</section>
+
+<section>
+<h2>Customer Feedback</h2>
+<textarea id="feedback"></textarea><br>
+<button onclick="feedbackSubmit()">Submit</button>
+<div id="feedbackList"></div>
+</section>
+
+<section>
+<h2>Admin Panel</h2>
+<input id="newService" placeholder="New Service">
+<button onclick="addService()">Add Service</button><br>
+<input id="statusId" placeholder="Appointment ID">
+<select id="status">
+<option>Confirmed</option>
+<option>Completed</option>
+<option>Cancelled</option>
+</select>
+<button onclick="updateStatus()">Update Status</button>
+<button onclick="sendSMS()">Send SMS / Call</button>
+<button onclick="autoCancel()">Auto Cancel Unpaid</button>
+<p>Payment Methods: Stripe, PayPal (Demo)</p>
+</section>
+
+<script>
+let currentUser=null;
+let users=[];
+let services=["Hair Cut","Hair Spa","Facial","Bridal Makeup","Manicure"];
+let appointments=[];
+let feedbacks=[];
+
+function register(){
+ users.push({name:name.value,user:user.value,pass:pass.value});
+ alert("Registration Successful");
+}
+
+function login(){
+ if(loginUser.value==="admin"&&loginPass.value==="admin123"){currentUser="Admin";alert("Admin Login");return;}
+ let u=users.find(x=>x.user===loginUser.value&&x.pass===loginPass.value);
+ if(u){currentUser=u.user;alert("Welcome "+u.name);}
+ else alert("Invalid Login");
+}
+
+function checkAvailability(){
+ slot.innerHTML="Selected slot is Available.";
+}
+
+function payment(){
+ alert("Payment Successful using Stripe/PayPal (Demo)");
+}
+
+function book(){
+ if(!currentUser||currentUser==="Admin"){alert("Login as User");return;}
+ let id="APT"+(appointments.length+1);
+ appointments.push({
+ id:id,user:currentUser,
+ service:service.value,
+ stylist:stylist.value,
+ date:date.value,
+ time:time.value,
+ status:"Confirmed",
+ paid:true
+ });
+ alert("Appointment Booked. ID: "+id);
+}
+
+function showAppointments(){
+ let t=document.getElementById("apptTable");
+ t.innerHTML="<tr><th>ID</th><th>Service</th><th>Stylist</th><th>Date</th><th>Time</th><th>Status</th></tr>";
+ appointments.forEach(a=>{
+  if(currentUser==="Admin"||a.user===currentUser){
+   t.innerHTML+=`<tr><td>${a.id}</td><td>${a.service}</td><td>${a.stylist}</td><td>${a.date}</td><td>${a.time}</td><td>${a.status}</td></tr>`;
+  }
+ });
+}
+
+function editAppointment(){
+ let a=appointments.find(x=>x.id===editId.value);
+ if(a){a.date=newDate.value;a.time=newTime.value;alert("Updated");showAppointments();}
+ else alert("Appointment Not Found");
+}
+
+function cancelAppointment(){
+ let i=appointments.findIndex(x=>x.id===editId.value);
+ if(i!=-1){appointments.splice(i,1);alert("Cancelled");showAppointments();}
+ else alert("Appointment Not Found");
+}
+
+function feedbackSubmit(){
+ feedbacks.push(feedback.value);
+ feedbackList.innerHTML="";
+ feedbacks.forEach(f=>feedbackList.innerHTML+="<p>💇 "+f+"</p>");
+ feedback.value="";
+}
+
+function addService(){
+ services.push(newService.value);
+ let opt=document.createElement("option");
+ opt.text=newService.value;
+ service.add(opt);
+ alert("Service Added");
+}
+
+function updateStatus(){
+ let a=appointments.find(x=>x.id===statusId.value);
+ if(a){a.status=status.value;alert("Status Updated");showAppointments();}
+}
+
+function sendSMS(){
+ alert("SMS/Call Reminder Sent (Demo)");
+}
+
+function autoCancel(){
+ appointments=appointments.filter(a=>a.paid);
+ alert("Unpaid reservations cancelled (Demo)");
+ showAppointments();
+}
+</script>
+
+</body>
+</html>
