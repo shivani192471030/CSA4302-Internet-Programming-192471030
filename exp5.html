@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flight Reservation System</title>
+<style>
+body{font-family:Arial;margin:0;background:#eef4fb}
+header{background:#003366;color:#fff;padding:15px;text-align:center}
+section{background:#fff;margin:15px;padding:15px;border-radius:8px}
+input,select,button,textarea{padding:8px;margin:5px}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #999;padding:8px;text-align:center}
+</style>
+</head>
+<body>
+<header><h1>Online Flight Reservation System</h1></header>
+
+<section>
+<h2>Login</h2>
+<input id="loginUser" placeholder="Username">
+<input id="loginPass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p><b>Admin:</b> admin / admin123</p>
+<p><a href="#" onclick="alert('Demo: Password reset link sent.')">Forgot Password?</a></p>
+</section>
+
+<section>
+<h2>Register</h2>
+<input id="name" placeholder="Name">
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="register()">Register</button>
+</section>
+
+<section>
+<h2>Search Flight</h2>
+<input id="from" placeholder="From">
+<input id="to" placeholder="Destination">
+<input id="travelDate" type="date">
+<select id="flightClass">
+<option>Economy</option>
+<option>Premium Economy</option>
+<option>Business</option>
+<option>First Class</option>
+</select>
+<button onclick="searchFlight()">Search</button>
+<p id="searchResult"></p>
+</section>
+
+<section>
+<h2>Book Ticket</h2>
+<select id="flightSelect">
+<option>AI101</option>
+<option>6E202</option>
+<option>UK303</option>
+</select>
+<input id="passenger" placeholder="Passenger Name">
+<input id="seat" placeholder="Seat (e.g. 12A)">
+<button onclick="bookTicket()">Book Ticket</button>
+<button onclick="payment()">Pay</button>
+</section>
+
+<section>
+<h2>My Tickets</h2>
+<button onclick="showTickets()">Refresh</button>
+<table id="ticketTable">
+<tr><th>Ticket</th><th>Flight</th><th>Passenger</th><th>Date</th><th>Status</th></tr>
+</table>
+</section>
+
+<section>
+<h2>View Booking Status</h2>
+<input id="ticketNo" placeholder="Ticket Number">
+<button onclick="status()">Check</button>
+<p id="statusText"></p>
+</section>
+
+<section>
+<h2>Print Ticket</h2>
+<input id="printNo" placeholder="Ticket Number">
+<button onclick="printTicket()">Print Ticket</button>
+</section>
+
+<section>
+<h2>Cancel Ticket</h2>
+<input id="cancelNo" placeholder="Ticket Number">
+<button onclick="cancelTicket()">Cancel</button>
+<p id="refund"></p>
+</section>
+
+<section>
+<h2>Customer Feedback</h2>
+<textarea id="feedback"></textarea><br>
+<button onclick="addFeedback()">Submit</button>
+<div id="feedbackList"></div>
+</section>
+
+<section>
+<h2>Admin Panel</h2>
+<select id="adminFlight">
+<option>AI101</option>
+<option>6E202</option>
+<option>UK303</option>
+</select>
+<input id="fare" placeholder="Fare">
+<input id="seats" placeholder="Seats">
+<button onclick="updateFlight()">Update Flight</button>
+<br><br>
+<button onclick="report()">Admin Report</button>
+<p id="reportText"></p>
+</section>
+
+<script>
+let currentUser=null;
+let users=[];
+let feedbacks=[];
+let flights=[
+{name:"AI101",fare:5000,seats:80},
+{name:"6E202",fare:4200,seats:70},
+{name:"UK303",fare:6200,seats:50}
+];
+let tickets=[];
+
+function register(){
+ users.push({name:name.value,username:user.value,password:pass.value});
+ alert("Registration Successful");
+}
+function login(){
+ if(loginUser.value==="admin"&&loginPass.value==="admin123"){currentUser="Admin";alert("Admin Login");return;}
+ let u=users.find(x=>x.username===loginUser.value&&x.password===loginPass.value);
+ if(u){currentUser=u.username;alert("Welcome "+u.name);}
+ else alert("Invalid Login");
+}
+function searchFlight(){
+ let f=flights.find(x=>x.name===flightSelect.value);
+ searchResult.innerHTML="Flight: "+f.name+"<br>Fare: ₹"+f.fare+"<br>Seats: "+f.seats+"<br>Class: "+flightClass.value;
+}
+function payment(){alert("Payment Successful (Demo)");}
+function bookTicket(){
+ if(!currentUser||currentUser==="Admin"){alert("Login as User");return;}
+ let f=flights.find(x=>x.name===flightSelect.value);
+ if(f.seats<=0){alert("No seats available");return;}
+ f.seats--;
+ let id="FLT"+Math.floor(Math.random()*900000+100000);
+ tickets.push({id:id,user:currentUser,flight:f.name,passenger:passenger.value,date:travelDate.value,status:"Confirmed"});
+ alert("Booked! Ticket No: "+id);
+}
+function showTickets(){
+ ticketTable.innerHTML="<tr><th>Ticket</th><th>Flight</th><th>Passenger</th><th>Date</th><th>Status</th></tr>";
+ tickets.forEach(t=>{
+   if(currentUser==="Admin"||t.user===currentUser){
+    ticketTable.innerHTML+=`<tr><td>${t.id}</td><td>${t.flight}</td><td>${t.passenger}</td><td>${t.date}</td><td>${t.status}</td></tr>`;
+   }
+ });
+}
+function status(){
+ let t=tickets.find(x=>x.id===ticketNo.value);
+ statusText.innerHTML=t?"Status: "+t.status:"Ticket Not Found";
+}
+function printTicket(){
+ let t=tickets.find(x=>x.id===printNo.value);
+ if(t) window.print(); else alert("Ticket Not Found");
+}
+function cancelTicket(){
+ let i=tickets.findIndex(x=>x.id===cancelNo.value);
+ if(i!=-1){
+   let fare=flights.find(x=>x.name===tickets[i].flight).fare;
+   refund.innerHTML="Refund Amount: ₹"+(fare*0.75);
+   tickets.splice(i,1);
+   alert("Ticket Cancelled");
+   showTickets();
+ }else alert("Ticket Not Found");
+}
+function addFeedback(){
+ feedbacks.push(feedback.value);
+ feedbackList.innerHTML="";
+ feedbacks.forEach(f=>feedbackList.innerHTML+="<p>✈️ "+f+"</p>");
+ feedback.value="";
+}
+function updateFlight(){
+ let f=flights.find(x=>x.name===adminFlight.value);
+ f.fare=parseInt(fare.value)||f.fare;
+ f.seats=parseInt(seats.value)||f.seats;
+ alert("Flight Updated");
+}
+function report(){
+ reportText.innerHTML="Users: "+users.length+"<br>Bookings: "+tickets.length+"<br>Flights: "+flights.length+"<br>Feedback: "+feedbacks.length;
+}
+</script>
+</body>
+</html>
